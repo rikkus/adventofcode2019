@@ -1,4 +1,5 @@
 _build/
 .elixir_ls/
 deps/
+__pycache__/
 
