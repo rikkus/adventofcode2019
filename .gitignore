@@ -3,3 +3,6 @@ _build/
 deps/
 __pycache__/
 node_modules/
+.vscode/
+bin/
+obj/
