@@ -1,12 +1,18 @@
 defmodule Aoc do
+  def trace_lines(input),
+    do:
+      String.split(input, "\n")
+      |> Enum.map(&parse_line/1)
+      |> List.to_tuple()
 
   def integers(),
     do: Stream.unfold(1, fn x -> {x, x + 1} end)
 
   def closest_intersection(input) do
-    [line1, line2] = String.split(input, "\n") |> Enum.map(&parse_line/1)
-    intersections = MapSet.intersection(MapSet.new(line1), MapSet.new(line2))
-    Enum.min_by(intersections, fn {x, y} -> manhattan_distance({0, 0}, {x, y}) end)
+    {line1, line2} = input |> trace_lines()
+
+    MapSet.intersection(MapSet.new(line1), MapSet.new(line2))
+    |> Enum.min_by(fn {x, y} -> manhattan_distance({0, 0}, {x, y}) end)
     |> manhattan_distance({0, 0})
   end
 
@@ -16,7 +22,7 @@ defmodule Aoc do
   def parse_line(input),
     do: execute_commands(input |> String.split(",") |> Enum.map(&parse_command/1), {0, 0}, [])
 
-  def parse_command(<<direction :: utf8, count :: binary>>),
+  def parse_command(<<direction::utf8, count::binary>>),
     do: {direction, String.to_integer(count)}
 
   def execute_commands([], _position, positions),
@@ -27,6 +33,7 @@ defmodule Aoc do
 
   def execute_commands([{direction, count} | commands], {x, y}, positions) do
     new_position = move({x, y}, direction)
+
     execute_commands([{direction, count - 1} | commands], new_position, [new_position | positions])
   end
 
@@ -40,23 +47,22 @@ defmodule Aoc do
       line
       |> Enum.reverse()
       |> Enum.zip(integers())
-      |> Enum.map_reduce(%{}, fn ({pos, n}, acc) -> {n, Map.put_new(acc, pos, n)} end)
+      |> Enum.map_reduce(%{}, fn {pos, n}, acc -> {n, Map.put_new(acc, pos, n)} end)
 
     offsets
   end
 
   def fewest_steps(input) do
-    [line1, line2] = String.split(input, "\n") |> Enum.map(&parse_line/1)
+    {line1, line2} = input |> trace_lines()
 
     intersections = MapSet.intersection(MapSet.new(line1), MapSet.new(line2))
 
     line1_offsets = first_offsets_for_each_visited_position(line1)
     line2_offsets = first_offsets_for_each_visited_position(line2)
 
-    Enum.map(
-      intersections,
-      fn {x, y} -> line1_offsets[{x, y}] + line2_offsets[{x, y}] end)
-      |> Enum.min()
+    intersections
+    |> Enum.map(fn {x, y} -> line1_offsets[{x, y}] + line2_offsets[{x, y}] end)
+    |> Enum.min()
   end
 
   def part_one(input),
