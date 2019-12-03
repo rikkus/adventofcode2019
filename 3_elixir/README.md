@@ -1,1 +1,1 @@
-# Advent of Code solution
+AoC solution
