@@ -4,12 +4,12 @@ defmodule Aoc do
   defp increasing?([_, y | xs]), do: increasing?([y | xs])
   defp increasing?(_), do: true
 
-  @spec digit_counts(Range.t()) :: nonempty_list(non_neg_integer)
+  @spec digit_counts(Range.t()) :: Stream.t()
   defp digit_counts(range) do
     range
-    |> Enum.map(&Integer.digits/1)
-    |> Enum.filter(&increasing?/1)
-    |> Enum.map(fn digits ->
+    |> Stream.map(&Integer.digits/1)
+    |> Stream.filter(&increasing?/1)
+    |> Stream.map(fn digits ->
       digits
       |> Enum.group_by(& &1)
       |> Map.values()
