@@ -1,5 +1,4 @@
 defmodule Maths do
-
   @spec factor(pos_integer()) :: list(pos_integer())
   def factor(n),
     do: factor(n, 1, []) |> Enum.sort()
