@@ -47,8 +47,7 @@ defmodule AmpServer do
     {:reply, :ok, %{state | downstream: downstream}}
   end
 
-  def handle_call(:execute, _from, state) do
-    {:reply, :ok, Amplifier.execute(state.memory, state.input |> elem(0))}
+  def handle_call(:execute, _from, _state) do
+    # {:reply, :ok, Computer.execute()}
   end
-
 end
