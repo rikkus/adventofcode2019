@@ -1,6 +1,6 @@
 defmodule Aoc do
   def part_one(input),
-    do: run(input, 12, 2)
+    do: run(input, 12, 2) |> Enum.at(0)
 
   def part_two(input),
     do: part_two(input, 99, 99)
@@ -9,37 +9,29 @@ defmodule Aoc do
     do: part_two(input, noun - 1, 99)
 
   def part_two(input, noun, verb) do
-    case run(input, noun, verb) do
+    case run(input, noun, verb) |> Enum.at(0) do
       19_690_720 -> 100 * noun + verb
       _ -> part_two(input, noun, verb - 1)
     end
   end
 
-  def to_indexed_map(input),
-    do:
-      0..length(input)
-      |> Enum.zip(input)
-      |> Map.new()
+  def run(input, noun, verb) do
+    input = input |> :array.from_list()
+    input = :array.set(1, noun, input)
+    input = :array.set(2, verb, input)
 
-  def run(input, noun, verb),
-    do:
-      %{(input |> to_indexed_map()) | 1 => noun, 2 => verb}
-      |> run(0)
-      |> Map.get(0)
+    input |> run()
+  end
 
-  def run(input),
-    do:
-      input
-      |> to_indexed_map()
-      |> run(0)
-      |> Map.values()
+  def run(input) when is_list(input),
+    do: run(:array.from_list(input))
 
-  def run(input, ip) do
-    case input[ip] do
-      1 -> run(input |> operator(ip, &+/2), ip + 4)
-      2 -> run(input |> operator(ip, &*/2), ip + 4)
-      99 -> input
-    end
+  def run(input) do
+    %Computer{mem: mem} =
+      Computer.new(input, [], false)
+      |> Computer.execute()
+
+    mem |> :array.to_list()
   end
 
   def operator(input, ip, op),

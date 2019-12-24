@@ -1,10 +1,8 @@
 defmodule AocTest do
   use ExUnit.Case
 
-  def array(list), do: list |> :array.from_list() |> :array.fix()
-
   test "1.1",
-    do: assert(Aoc.execute(array([3, 0, 4, 0, 99]), [42]) == [42])
+    do: assert(Computer.new([3, 0, 4, 0, 99] |> :array.from_list(), [42]) |> Computer.execute() |> Computer.outputs() == [42])
 
   @input [
     3,
@@ -687,6 +685,6 @@ defmodule AocTest do
     226
   ]
 
-  test "part_one", do: assert(Aoc.execute(array(@input), [1]) |> hd() == 13787043)
-  test "part_two", do: assert(Aoc.execute(array(@input), [5]) |> hd() == 3892695)
+  test "part_one", do: assert(Computer.new(@input |> :array.from_list(), [1]) |> Computer.execute() |> Computer.outputs() |> hd() == 13787043)
+  test "part_two", do: assert(Computer.new(@input |> :array.from_list(), [5]) |> Computer.execute() |> Computer.outputs() |> hd() == 3892695)
 end

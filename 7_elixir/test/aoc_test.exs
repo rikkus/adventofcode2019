@@ -721,6 +721,6 @@ defmodule AocTest do
       )
 
   test "part_two",
-    do: assert(Aoc.part_two(@input) == :mu)
+    do: assert(Aoc.part_two(@input) == 69113332)
 
 end

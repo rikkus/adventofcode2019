@@ -1,13 +1,11 @@
 defmodule Aoc do
   @type intvec2d :: {integer, integer}
 
-  def best_location(input) do
-    {_asteroid, visible_count} =
-      input
-      |> parse()
-      |> find_asteroids()
-      |> best()
-  end
+  def best_location(input),
+   do: input
+    |> parse()
+    |> find_asteroids()
+    |> best()
 
   def best(asteroids),
     do:
@@ -27,23 +25,30 @@ defmodule Aoc do
     IO.inspect(best, label: "best")
     IO.inspect(others, label: "others")
 
-    {{x, y}, score} = others
+    grouped =
+      others
     |> Enum.map(fn other -> {other, angle_between(best, other), distance_between(best, other)} end)
-    |> IO.inspect(label: "other")
     |> Enum.group_by(fn {_, angle, _} -> angle end, fn {other, _angle, distance} ->
       {other, distance}
     end)
-    |> Enum.flat_map(
-      fn {angle, l} ->
-      l |> Enum.sort_by(fn {_other, distance} -> distance end)
-        |> Enum.with_index()
-        |> Enum.map(fn {{other, distance}, i} -> {other, angle + (360 * (i + 1)) + distance} end)
-      end
-    )
-    |> IO.inspect
+    |> Enum.map(fn {k, v} -> {k, v |> Enum.sort_by(fn {{_, _}, d} -> d end)} end)
+
+    {x, y} = flatten(grouped, 1)
 
     x * 100 + y
   end
+
+  def flatten(foo, 200),
+    do: foo
+
+  def flatten([{_, [{{x, y}, _}]}], _n),
+    do: {x, y}
+
+  def flatten([{_, [_]} | rest], n),
+    do: flatten(rest, n + 1)
+
+  def flatten([{angle, [_ | asteroids]} | rest], n),
+    do: flatten([{angle, asteroids} | rest], n + 1)
 
   def distance_between({ax, ay}, {bx, by}),
     do: :math.sqrt(:math.pow(ax - bx, 2) + :math.pow(ay - by, 2))
@@ -95,7 +100,7 @@ defmodule Aoc do
     do: radians * 180 / :math.pi()
 
   def angle_between({ax, ay}, {bx, by}),
-    do: -(:math.atan2(bx - ax, ay - by) |> radians_to_degrees())
+    do: 180 - (:math.atan2(bx - ax, ay - by) |> radians_to_degrees())
 
   defp perp_dot_product({ax, ay}, {bx, by}, {cx, cy}),
     do: (ax - cx) * (by - cy) - (ay - cy) * (bx - cx)
