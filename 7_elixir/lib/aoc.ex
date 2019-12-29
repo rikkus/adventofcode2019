@@ -34,9 +34,9 @@ defmodule Aoc do
   end
 
   def do_part_two([c1, c2, c3, c4, c5], output) do
-    #IO.puts "Asking computer #{c1.name} (which has input #{Enum.at(c1.inputs, 0)}) to execute"
+    IO.puts "Asking computer #{c1.name} (which has input #{Enum.at(c1.inputs, 0)}) to execute"
     c1 = Computer.execute(c1)
-    #IO.puts "Output from computer #{c1.name}: #{inspect(c1.outputs, charlists: :as_lists)}"
+    IO.puts "Output from computer #{c1.name}: #{inspect(c1.outputs, charlists: :as_lists)}"
     case c1 do
       %Computer{running: true, outputs: [o]} ->
         do_part_two([%Computer{c2 | inputs: c2.inputs ++ [o]}, c3, c4, c5, %Computer{c1 | outputs: []}], o)
