@@ -5,8 +5,8 @@ defmodule Aoc5Test do
     do:
       assert(
         Computer.new("", [3, 0, 4, 0, 99] |> :array.from_list(), [42])
-        |> Computer.execute()
-        |> Computer.output() == [42]
+        |> Computer.execute(debug: true)
+        |> Computer.last_output() == 42
       )
 
   @mem [
@@ -694,9 +694,8 @@ defmodule Aoc5Test do
   test "part_two", do: assert(execute(@mem, [5]) == 3_892_695)
 
   def execute(mem, input) do
-    Computer.new("bob", mem |> :array.from_list(), input, after_output: :continue)
-    |> Computer.execute()
+    Computer.new("bob", mem |> :array.from_list(), input)
+    |> Computer.execute(after_output: :continue)
     |> Computer.last_output()
   end
-
 end

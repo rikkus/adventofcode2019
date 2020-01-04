@@ -1,11 +1,9 @@
 defmodule Aoc9Test do
   use ExUnit.Case
 
-  def array(list), do: list |> :array.from_list() |> :array.fix()
-
   test "1.1" do
-    test_input = [109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99]
-    assert(Aoc9.part_one(test_input) == test_input)
+    test_memory = [109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99]
+    assert(Aoc9.part_one(test_memory) == test_memory)
   end
 
   test "1.2" do
@@ -18,7 +16,7 @@ defmodule Aoc9Test do
     assert(Aoc9.part_one([104, 1_125_899_906_842_624, 99]) == [1_125_899_906_842_624])
   end
 
-  @input [
+  @memory [
     1102,
     34_463_338,
     34_463_338,
@@ -995,6 +993,11 @@ defmodule Aoc9Test do
   ]
 
   test "part_one" do
-    assert(Aoc9.part_one(@input, [1]) == [0])
+   assert(Aoc9.part_one(@memory, [1]) == [3380552333])
+  end
+
+  @tag timeout: :infinity
+  test "part_two" do
+   assert(Aoc9.part_one(@memory, [2]) == [0])
   end
 end
