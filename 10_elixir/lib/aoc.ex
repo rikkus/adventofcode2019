@@ -2,10 +2,11 @@ defmodule Aoc do
   @type intvec2d :: {integer, integer}
 
   def best_location(input),
-   do: input
-    |> parse()
-    |> find_asteroids()
-    |> best()
+    do:
+      input
+      |> parse()
+      |> find_asteroids()
+      |> best()
 
   def best(asteroids),
     do:
@@ -22,18 +23,24 @@ defmodule Aoc do
     asteroids = input |> parse() |> find_asteroids()
     {best, _} = asteroids |> best()
     others = asteroids |> MapSet.delete(best)
-    IO.inspect(best, label: "best")
-    IO.inspect(others, label: "others")
 
-    grouped =
+    ordered =
       others
-    |> Enum.map(fn other -> {other, angle_between(best, other), distance_between(best, other)} end)
-    |> Enum.group_by(fn {_, angle, _} -> angle end, fn {other, _angle, distance} ->
-      {other, distance}
-    end)
-    |> Enum.map(fn {k, v} -> {k, v |> Enum.sort_by(fn {{_, _}, d} -> d end)} end)
+      |> Enum.map(fn other ->
+        {other, angle_between(best, other), distance_between(best, other)}
+      end)
+      |> Enum.group_by(fn {_, angle, _} -> angle end, fn {other, _angle, distance} ->
+        {other, distance}
+      end)
+      |> Enum.map(fn {k, v} -> {k, v |> Enum.sort_by(fn {{_, _}, d} -> d end)} end)
+      |> Enum.flat_map(fn {k, v} ->
+        Enum.zip(Stream.iterate(1, &(&1 + 1)), v)
+        |> Enum.map(fn {n, {{x, y}, _}} -> {n * 360 + k, {x, y}} end)
+      end)
+      |> Enum.sort()
+      |> Enum.map(fn {_, {x, y}} -> {x, y} end)
 
-    {x, y} = flatten(grouped, 1)
+    {x, y} = ordered |> Enum.drop(199) |> hd()
 
     x * 100 + y
   end
@@ -93,14 +100,14 @@ defmodule Aoc do
   def dot({ax, ay}, {bx, by}),
     do: ax * bx + ay * by
 
-  defp cross({ax, ay}, {bx, by}),
-    do: ax * by - ay * bx
-
   def radians_to_degrees(radians),
     do: radians * 180 / :math.pi()
 
   def angle_between({ax, ay}, {bx, by}),
-    do: 180 - (:math.atan2(bx - ax, ay - by) |> radians_to_degrees())
+    do: to_360(:math.atan2(bx - ax, ay - by) |> radians_to_degrees())
+
+  def to_360(a) when a < 0, do: 360 + a
+  def to_360(a), do: a
 
   defp perp_dot_product({ax, ay}, {bx, by}, {cx, cy}),
     do: (ax - cx) * (by - cy) - (ay - cy) * (bx - cx)
