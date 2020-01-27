@@ -26,15 +26,20 @@ defmodule Instruction do
   }
 
   @spec argument_modes([0 | 1 | 2, ...]) :: [:immediate | :position | :relative, ...]
-  def argument_modes([a1]), do: [ Memory.addressing_mode(a1), :position, :immediate ]
-  def argument_modes([a1, a2]), do: [ Memory.addressing_mode(a1), Memory.addressing_mode(a2), :immediate ]
-  def argument_modes([a1, a2, a3]), do: [ Memory.addressing_mode(a1), Memory.addressing_mode(a2), Memory.addressing_mode(a3) ]
+  def argument_modes([a1]), do: [Memory.addressing_mode(a1), :position, :immediate]
+
+  def argument_modes([a1, a2]),
+    do: [Memory.addressing_mode(a1), Memory.addressing_mode(a2), :immediate]
+
+  def argument_modes([a1, a2, a3]),
+    do: [Memory.addressing_mode(a1), Memory.addressing_mode(a2), Memory.addressing_mode(a3)]
 
   def decode(mem, ip, opts \\ []) do
+    log("-----------------------------------------------------------------", opts)
+    log("decode:  ip: #{ip}", opts)
     instruction = :array.get(ip, mem)
     instruction_digits = Integer.digits(instruction) |> Enum.reverse()
 
-    log("-----------------------------------------------------------------", opts)
     log("decode:  instruction: #{instruction}", opts)
     log("         digits: #{inspect(instruction_digits, charlists: :as_lists)}", opts)
 
@@ -44,7 +49,9 @@ defmodule Instruction do
     log("         opcode: #{opcode_to_number(opcode)} (#{opcode})", opts)
     log("         instruction_modes: #{inspect(instruction_modes)}", opts)
 
-    args = args_required(opcode) |> Enum.map(fn offset -> arg(mem, ip, offset, instruction_modes, opts) end)
+    args =
+      args_required(opcode)
+      |> Enum.map(fn offset -> arg(mem, ip, offset, instruction_modes, opts) end)
 
     log("         args: #{inspect(args)}", opts)
     log("", opts)
@@ -53,7 +60,7 @@ defmodule Instruction do
   end
 
   defp arg(mem, ip, offset, instruction_modes, opts),
-    do: { Memory.fetch(mem, ip + 1 + offset, opts), Enum.at(instruction_modes, offset, :position) }
+    do: {Memory.fetch(mem, ip + 1 + offset, opts), Enum.at(instruction_modes, offset, :position)}
 
   def mode_numbers_to_modes(mode_numbers),
     do:
