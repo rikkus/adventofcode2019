@@ -2,7 +2,7 @@ def fuel_required(mass):
   return mass // 3 - 2
 
 def parse(input):
-  return [int(i) for i in input.split()]
+  return (int(i) for i in input.split())
 
 def part_one(input):
   return sum(fuel_required(i) for i in parse(input))
