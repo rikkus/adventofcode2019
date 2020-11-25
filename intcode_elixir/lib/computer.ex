@@ -1,3 +1,5 @@
+require IEx
+
 defmodule Computer do
   @type input :: list(integer)
   @type output :: list(integer)
@@ -213,9 +215,9 @@ defmodule Computer do
     |> do_execute()
   end
 
-  defp execute_instruction(%Computer{ic: ic} = computer, {:halt, _}) do
+  defp execute_instruction(computer, {:halt, _}) do
     log("hlt", computer)
-    %Computer{computer | state: :halted, ic: ic + 1} |> move_to_next_instruction([])
+    %Computer{computer | state: :halted} |> move_to_next_instruction([])
   end
 
   defp execute_instruction(computer, {other, modes}),

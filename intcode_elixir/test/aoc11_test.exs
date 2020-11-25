@@ -5,5 +5,8 @@ defmodule Aoc11Test do
          |> String.split(",", trim: true)
          |> Enum.map(fn s -> String.to_integer(s) end)
 
-  test "part_one", do: assert(Aoc11.part_one(@input) == :mu)
+  def input, do: @input
+
+  test "part_one", do: assert(Aoc11.part_one(@input) == 2720)
+  test "part_two", do: Aoc11.part_two(@input)
 end

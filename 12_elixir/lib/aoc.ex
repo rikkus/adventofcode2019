@@ -40,33 +40,52 @@ defmodule Aoc do
     combos = combinations(Map.keys(moon_map), 2)
     moon_map = step(moon_map, combos, reps)
 
+    total_system_energy(moon_map)
+  end
+
+  def total_system_energy(moon_map) do
     moon_map
     |> Map.values
     |> Enum.map(fn moon -> total_energy(moon) end)
     |> Enum.sum
   end
 
+  def state(moon_map, k) do
+    moon_map
+    |> Enum.map(fn {_, %Moon{pos: pos, vel: vel}} -> {Map.get(pos, k), Map.get(vel, k)} end)
+    |> Enum.to_list()
+  end
+
   def part_two(input) do
     moons = parse(input)
 
     refs = Stream.iterate(1, &(&1 + 1))
-    moon_map = refs |> Enum.zip(moons) |> Map.new()
+    initial_state = refs |> Enum.zip(moons) |> Map.new()
 
-    set = MapSet.new()
-    MapSet.put(set, moon_map)
-    combos = combinations(Map.keys(moon_map), 2)
-    find_match(set, moon_map, combos, 0)
+    initial_state_x = initial_state |> state(:x)
+    initial_state_y = initial_state |> state(:y)
+    initial_state_z = initial_state |> state(:z)
+
+    combos = combinations(Map.keys(initial_state), 2)
+    x = find_match(initial_state, initial_state, combos, initial_state_x, :x, 1)
+    y = find_match(initial_state, initial_state, combos, initial_state_y, :y, 1)
+    z = find_match(initial_state, initial_state, combos, initial_state_z, :z, 1)
+
+    x |> lcm(y) |> lcm(z)
   end
 
-  defp find_match(set, moon_map, combos, n) do
-    next = step(moon_map, combos)
-    if n != 0 && rem(n, 1_000_000) == 0 do
+  defp find_match(initial, moon_map, combos, to_match, k, n) do
+    moon_map = step(moon_map, combos)
+
+    if rem(n, 1_000_000) == 0 do
      IO.puts n
     end
-      if MapSet.member?(set, next) do
+      #IO.inspect{:comparing, to_match, moon_map, state(moon_map, k)}
+      if to_match == state(moon_map, k) do
+        #IO.inspect{:match}
         n
       else
-        find_match(MapSet.put(set, next), next, combos, n + 1)
+        find_match(initial, moon_map, combos, to_match, k, n + 1)
       end
   end
 
@@ -119,6 +138,29 @@ defmodule Aoc do
       pos1 < pos2 -> 1
       pos1 > pos2 -> -1
       true -> 0
+    end
+  end
+
+  @spec lcm(integer, integer) :: integer
+  def lcm(a, b) do
+    (a * b) |> div(gcd(a, b))
+  end
+
+  @spec gcd(integer, integer) :: integer
+  def gcd(1,_n), do: 1
+
+  def gcd(2,n) do
+    case rem(n,2) do
+      0 -> 2
+      _ -> 1
+    end
+  end
+
+  def gcd( m, n) do
+    mod = rem(m,n)
+    case mod do
+      0 -> n
+      _ -> gcd(n,mod)
     end
   end
 end

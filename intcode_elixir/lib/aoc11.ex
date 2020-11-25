@@ -14,99 +14,102 @@ defmodule Aoc11 do
       @home,
       %{@home => @black},
       @north,
-      Computer.new("painter", :array.from_list(mem, 0), [0])
+      Computer.new("painter", :array.from_list(mem, @black), [@black])
     )
+    |> Map.keys()
+    |> Enum.count()
   end
+
+  def part_two(mem) do
+    next(
+      @home,
+      %{@home => @white},
+      @north,
+      Computer.new("painter", :array.from_list(mem, @black), [@white])
+    ) |> print()
+  end
+
 
   def heading_char(@north), do: "^"
   def heading_char(@south), do: "v"
   def heading_char(@east), do: ">"
   def heading_char(@west), do: "<"
 
-  def print(location, grid, heading) do
-    for y <- -5..5 do
-      for x <- -5..5 do
-        if {x, y} == location do
-          IO.write(heading_char(heading))
-        else
+  def print(grid) do
+    min_x = grid |> Map.keys |> Enum.map(fn {x, _} -> x end) |> Enum.min()
+    max_x = grid |> Map.keys |> Enum.map(fn {x, _} -> x end) |> Enum.max()
+    min_y = grid |> Map.keys |> Enum.map(fn {_, y} -> y end) |> Enum.min()
+    max_y = grid |> Map.keys |> Enum.map(fn {_, y} -> y end) |> Enum.max()
+
+    for y <- min_y..max_y do
+      for x <- -min_x..max_x do
           c =
             case Map.get(grid, {x, y}) do
-              0 -> "#"
-              1 -> "O"
+              0 -> " "
+              1 -> "#"
               _ -> "."
             end
 
           IO.write(c)
         end
+      IO.puts("")
       end
 
       IO.puts("")
-    end
-
-    IO.puts("")
   end
 
   def color_name(@black), do: "black"
   def color_name(@white), do: "white"
-  def direction_char(@left), do: "left"
-  def direction_char(@right), do: "right"
+  def direction_name(@left), do: "left"
+  def direction_name(@right), do: "right"
 
   def next(location, grid, heading, robot) do
-    # print(location, grid, heading)
 
+    #IO.inspect(at: location, heading: heading_char(heading))
     case step(robot) do
       {:ok, robot, color, direction} ->
-        IO.inspect(
-          color: color_name(color),
-          direction: direction_char(direction),
-          inputs: robot.inputs
-        )
-
+        #IO.inspect(instruction: [set: location, to: color_name(color), and_turn: direction_name(direction)])
         grid = Map.put(grid, location, color)
-        {location, heading} = move(location, heading, direction)
+        #IO.inspect(turning: direction_name(direction))
+        {heading, location} = move(location, heading, direction)
+        new_location_color = Map.get(grid, location, @black)
+        #IO.inspect(moved_to: location, which_is: color_name(new_location_color), now_heading: heading_char(heading))
 
-        robot = robot |> Computer.input([Map.get(grid, location, @white)])
+        robot = robot |> Computer.input([new_location_color])
+        #IO.puts("")
         next(location, grid, heading, robot)
 
       {:ok, :done} ->
         grid
-
-      what ->
-        IO.inspect(what)
-        nil
     end
   end
 
-  def step(robot) do
-    robot
-    |> Computer.execute(after_output: :idle, debug: false)
-    |> Computer.execute(after_output: :idle, debug: false)
-    |> analyse()
+  def step(%Computer{state: :halted, outputs: []}),
+    do: {:ok, :done}
+
+  def step(%Computer{state: :idle, outputs: [direction, color]} = computer),
+    do: {:ok, %Computer{computer | outputs: []}, color, direction}
+
+  def step(%Computer{state: :idle, outputs: [_direction]} = computer),
+    do: step(Computer.execute(computer, after_output: :idle))
+
+  def step(%Computer{state: :idle, outputs: [], inputs: [_]} = computer),
+    do: step(Computer.execute(computer, after_output: :idle))
+
+  def turn(@north, @left), do: @west
+  def turn(@west, @left), do: @south
+  def turn(@south, @left), do: @east
+  def turn(@east, @left), do: @north
+
+  def turn(@north, @right), do: @east
+  def turn(@east, @right), do: @south
+  def turn(@south, @right), do: @west
+  def turn(@west, @right), do: @north
+
+  def move({x, y}, heading, direction) do
+    new_direction = turn(heading, direction)
+    {new_direction, move({x, y}, new_direction)}
   end
 
-  def analyse(%Computer{state: :halted}), do: {:ok, :done}
-
-  def analyse(computer) do
-    {computer, color} = Computer.read_output(computer)
-    {computer, direction} = Computer.read_output(computer)
-    {:ok, computer, color, direction}
-  end
-
-  def move({x, y}, heading, @left) do
-    case heading do
-      @north -> {{x + 1, y}, @west}
-      @south -> {{x - 1, y}, @east}
-      @east -> {{x, y + 1}, @south}
-      @west -> {{x, y - 1}, @north}
-    end
-  end
-
-  def move({x, y}, heading, @right) do
-    case heading do
-      @north -> {{x + 1, y}, @east}
-      @south -> {{x - 1, y}, @west}
-      @east -> {{x, y + 1}, @north}
-      @west -> {{x, y - 1}, @south}
-    end
-  end
+  def move({x, y}, {dx, dy}), do: {x + dx, y + dy}
 end

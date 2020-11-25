@@ -8,3 +8,4 @@ bin/
 obj/
 .idea/
 venv/
+.DS_Store
